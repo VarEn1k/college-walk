@@ -281,7 +281,7 @@ class App {
         if (this.proxy === undefined) return;
 
         const wallLimit = 1.3;
-        const speed = 2;
+        const speed = 3;
         let pos = this.dolly.position.clone();
         pos.y += 1;
 
@@ -369,9 +369,12 @@ class App {
     this.scene.add( this.ui.mesh );
     }
 
-    showInfoBoard(name, obj, pos){
+    showInfoBoard(name, obj, pos, height){
+        if (typeof height == 'undefined') {
+            height = 1.3
+        }
         if (this.ui === undefined) return;
-        this.ui.position.copy(pos).add(this.workingVec3.set( 0, 1.3, 0) );
+        this.ui.position.copy(pos).add(this.workingVec3.set( 0, height, 0) );
         const camPos = this.dummyCam.getWorldPosition(this.workingVec3);
         this.ui.updateElement( 'name', obj.name);
         this.ui.updateElement( 'info', obj.info);
