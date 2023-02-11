@@ -468,6 +468,7 @@ class App {
         this.renderer.render(this.scene, this.camera);
     }
 
+
     rightStick(deltaX, deltaY, buttonPressed) {
         if (this.snowman && buttonPressed) {
             // Zoom model
