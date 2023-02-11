@@ -9,14 +9,18 @@ import {XRControllerModelFactory} from "three/addons/webxr/XRControllerModelFact
 import Stats from "three/addons/libs/stats.module";
 import {LoadingBar} from "./utils/LoadingBar";
 import {RGBELoader} from "three/addons/loaders/RGBELoader";
+import collegeInfo from "../assets/college.json"
+
 
 import venice_sunset_environment from "../assets/hdr/venice_sunset_1k.hdr"
 import college from "../assets/college.glb"
 
 import snowman from "../assets/snowman_-_low_poly.glb"
+import {CanvasUI} from "./utils/CanvasUI";
 const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
+    workingVec3;
     constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -75,6 +79,13 @@ class App {
         // this.loadingBar = new LoadingBar()
 
         this.loadCollege()
+
+        this.vecDolly = new THREE.Vector3()
+        this.vecObject = new THREE.Vector3()
+        this.workingVec3 = new THREE.Vector3()
+
+        this.boardShown = ''
+        this.boardData = collegeInfo
     }
 
     setEnvironment(){
@@ -235,6 +246,9 @@ class App {
 
         // Add Enter WebXR button
         document.body.appendChild(VRButton.createButton(this.renderer))
+
+        this.createUI();
+
         this.renderer.setAnimationLoop(this.render.bind(this))
     }
 
@@ -339,7 +353,54 @@ class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
+    createUI() {
+    const config = {
+    panelSize: { height: 0.5 },
+    height: 256,
+    name: {fontSize: 50, height: 70},
+    info: {position:{ top:70 }, backgroundColor: "#ccc", fontColor: "#000"}
+};
+    const content = {
+        name: "name",
+        info: "info"
+    };
+
+    this.ui = new CanvasUI(content, config );
+    this.scene.add( this.ui.mesh );
+    }
+
+    showInfoBoard(name, obj, pos){
+        if (this.ui === undefined) return;
+        this.ui.position.copy(pos).add(this.workingVec3.set( 0, 1.3, 0) );
+        const camPos = this.dummyCam.getWorldPosition(this.workingVec3);
+        this.ui.updateElement( 'name', obj.name);
+        this.ui.updateElement( 'info', obj.info);
+        this.ui.update();
+        this.ui.lookAt(camPos)
+        this.ui.visible = true
+        this.boardShown = name
+    }
+
     render( timestamp, frame) {
+        if (this.renderer.xr.isPresenting && this.boardData) {
+            const scene = this.scene;
+            const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
+            let boardFound = false;
+            Object.entries(this.boardData).forEach(([name, info]) => {
+                const obj = scene.getObjectByName(name)
+                if (obj !== undefined) {
+                    const pos = obj.getWorldPosition(this.vecObject)
+                    if (dollyPos.distanceTo(pos) < 3) {
+                        boardFound = true;
+                        if (this.boardShown !== name) this.showInfoBoard(name, info, pos)
+                    }
+                }
+            })
+            if (!boardFound) {
+                this.boardShown = ''
+                this.ui.visible = false
+            }
+        }
         // if (this.renderer.xr.isPresenting) {
         //     const session = this.renderer.xr.getSession();
         //     const inputSources = session.inputSources;
