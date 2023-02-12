@@ -14,6 +14,7 @@ import collegeInfo from "../assets/college.json"
 
 import venice_sunset_environment from "../assets/hdr/venice_sunset_1k.hdr"
 import college from "../assets/college.glb"
+import skull from "../assets/skull.glb"
 
 import snowman from "../assets/snowman_-_low_poly.glb"
 import {CanvasUI} from "./utils/CanvasUI";
@@ -21,6 +22,7 @@ const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
     camPos;
+    obj;
     constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -59,7 +61,7 @@ class App {
 
         // this.setEnvironment();
 
-        // this.initScene();
+
         this.setupXR();
 
         this.getInputSources = true;
@@ -78,7 +80,8 @@ class App {
 
         // this.loadingBar = new LoadingBar()
 
-        this.loadCollege()
+        this.loadCollege();
+        this.initScene();
 
         this.vecDolly = new THREE.Vector3()
         this.vecObject = new THREE.Vector3()
@@ -86,6 +89,7 @@ class App {
 
         this.boardShown = ''
         this.boardData = collegeInfo
+        this.skullData = collegeInfo
     }
 
     setEnvironment(){
@@ -164,31 +168,36 @@ class App {
     }
 
     initScene() {
-        this.room = new THREE.LineSegments(
-            new BoxLineGeometry(6, 6, 6, 10, 10, 10),
-            new THREE.LineBasicMaterial({color: 0x808080})
-        );
-
-        const geo1 = new THREE.SphereGeometry(0.1, 16, 8);
-        const mat1 = new THREE.MeshStandardMaterial({color: 0x3333ff});
-        const mat2 = new THREE.MeshStandardMaterial({color: 0x33ff33});
-        this.materials = [mat1, mat2];
-        this.rsphere = new THREE.Mesh(geo1, mat1);
-        this.rsphere.position.set(0.5, 1.6, -1);
-        this.scene.add(this.rsphere);
-        this.lsphere = new THREE.Mesh(geo1, mat1);
-        this.lsphere.position.set(-0.5, 1.6, -1);
-        this.scene.add(this.lsphere);
-
-        this.room.geometry.translate(0, 3, 0);
-        this.scene.add(this.room);
+        // this.room = new THREE.LineSegments(
+        //     new BoxLineGeometry(6, 6, 6, 10, 10, 10),
+        //     new THREE.LineBasicMaterial({color: 0x808080})
+        // );
+        //
+        // const geo1 = new THREE.SphereGeometry(0.1, 16, 8);
+        // const mat1 = new THREE.MeshStandardMaterial({color: 0x3333ff});
+        // const mat2 = new THREE.MeshStandardMaterial({color: 0x33ff33});
+        // this.materials = [mat1, mat2];
+        // this.rsphere = new THREE.Mesh(geo1, mat1);
+        // this.rsphere.position.set(0.5, 1.6, -1);
+        // this.scene.add(this.rsphere);
+        // this.lsphere = new THREE.Mesh(geo1, mat1);
+        // this.lsphere.position.set(-0.5, 1.6, -1);
+        // this.scene.add(this.lsphere);
+        //
+        // this.room.geometry.translate(0, 3, 0);
+        // this.scene.add(this.room);
 
         const self = this
 
-        this.loadAsset(snowman, snowmanPosition.x, snowmanPosition.y, snowmanPosition.z, scene => {
-            const scale = snowmanPosition.scale
+        // this.loadAsset(snowman, snowmanPosition.x, snowmanPosition.y, snowmanPosition.z, scene => {
+        //     const scale = snowmanPosition.scale
+        //     scene.scale.set(scale, scale, scale)
+        //     self.snowman = scene
+        // })
+        this.loadAsset(skull, 0, 2, -2,scene => {
+            const scale = 1
             scene.scale.set(scale, scale, scale)
-            self.snowman = scene
+            self.skull = scene
         })
 
     }
@@ -473,6 +482,13 @@ class App {
         if (this.renderer.xr.isPresenting && this.selectPressed){
             this.moveDolly(dt);
         }
+
+        if(this.renderer.xr.isPresenting && this.skull) {
+            const table = this.scene.getObjectByName("Atrium_Table_1")
+            const tablePos = table.getWorldPosition(this.vecObject)
+            this.skull.position.set(tablePos.x, tablePos.y, tablePos.z)
+        }
+
         this.stats.update()
         this.renderer.render(this.scene, this.camera);
     }
