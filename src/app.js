@@ -20,7 +20,7 @@ import {CanvasUI} from "./utils/CanvasUI";
 const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
-    workingVec3;
+    camPos;
     constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -399,6 +399,10 @@ class App {
                         boardFound = true;
                         if (this.boardShown !== name) this.showInfoBoard(name, info, pos, height)
                     }
+                    if (this.ui) {
+                    const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
+                    this.ui.lookAt(camPos)
+                   }
                 }
             })
             if (!boardFound) {
