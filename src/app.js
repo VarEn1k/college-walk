@@ -371,7 +371,7 @@ class App {
 
     showInfoBoard(name, obj, pos, height){
         if (typeof height == 'undefined') {
-            height = 1.3
+             height = 1.3
         }
         if (this.ui === undefined) return;
         this.ui.position.copy(pos).add(this.workingVec3.set( 0, height, 0) );
@@ -389,13 +389,15 @@ class App {
             const scene = this.scene;
             const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
             let boardFound = false;
-            Object.entries(this.boardData).forEach(([name, info]) => {
+            Object.entries(this.boardData).forEach(([name,properties]) => {
+                const info = {name: properties.name, info: properties.info}
+                const height = properties.height
                 const obj = scene.getObjectByName(name)
                 if (obj !== undefined) {
                     const pos = obj.getWorldPosition(this.vecObject)
                     if (dollyPos.distanceTo(pos) < 3) {
                         boardFound = true;
-                        if (this.boardShown !== name) this.showInfoBoard(name, info, pos)
+                        if (this.boardShown !== name) this.showInfoBoard(name, info, pos, height)
                     }
                 }
             })

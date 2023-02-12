@@ -5,10 +5,15 @@
   },
   "RowOfChairs__2_": {
     "name": "Chairs",
-    "info": "1 chair, 2 chair, 3 chair ,4 chair.",
+    "info": "1 chair, 2 chair, 3 chair ,4 chair."
   },
   "Kitchen_Worktop_Hobs__1_": {
     "name": "Kitchen",
     "info": "The kitchen has a level 5 hygiene rating."
+  },
+  "WaterVendor__1_": {
+    "name": "Water vendon",
+    "info": "Water.",
+    "height": 2
   }
 }
