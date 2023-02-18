@@ -21,8 +21,6 @@ import {CanvasUI} from "./utils/CanvasUI";
 const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
-    camPos;
-    obj;
     constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -89,7 +87,6 @@ class App {
 
         this.boardShown = ''
         this.boardData = collegeInfo
-        this.skullData = collegeInfo
     }
 
     setEnvironment(){
@@ -484,9 +481,29 @@ class App {
         }
 
         if(this.renderer.xr.isPresenting && this.skull) {
+
+
+
             const table = this.scene.getObjectByName("Atrium_Table_1")
             const tablePos = table.getWorldPosition(this.vecObject)
-            this.skull.position.set(tablePos.x, tablePos.y, tablePos.z)
+            const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
+
+
+
+                if (dollyPos.distanceTo(tablePos) < 3) {
+                    this.skullInfo = 'skull.glb'
+                    this.skull.position.set(tablePos.x, tablePos.y + 2, tablePos.z)
+
+                    // this.skull.translateY(1.2)
+                    this.skull.visible = true
+            } else {
+                    this.skull.visible = false
+                }
+            if (this.skull) {
+                const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
+                this.skull.lookAt(camPos)
+            }
+
         }
 
         this.stats.update()
