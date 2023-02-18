@@ -10,7 +10,7 @@ import Stats from "three/addons/libs/stats.module";
 import {LoadingBar} from "./utils/LoadingBar";
 import {RGBELoader} from "three/addons/loaders/RGBELoader";
 import collegeInfo from "../assets/college.json"
-
+import skullInfo from "../assets/skull.json"
 
 import venice_sunset_environment from "../assets/hdr/venice_sunset_1k.hdr"
 import college from "../assets/college.glb"
@@ -18,9 +18,11 @@ import skull from "../assets/skull.glb"
 
 import snowman from "../assets/snowman_-_low_poly.glb"
 import {CanvasUI} from "./utils/CanvasUI";
+import {GazeController} from "./utils/GazeController";
 const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
+
     constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -87,6 +89,7 @@ class App {
 
         this.boardShown = ''
         this.boardData = collegeInfo
+        this.skullData = skullInfo
     }
 
     setEnvironment(){
@@ -249,12 +252,32 @@ class App {
             controller.addEventListener('selectstart', onSelectStart)
             controller.addEventListener('selectend', onSelectEnd)
         })
+        const dt = this.clock.getDelta();
 
-        // Add Enter WebXR button
+        const timeoutId = setTimeout(connectionTimeout, 4000)
+
+        function onConnected(event) {
+            clearTimeout(timeoutId)
+        }
+
+        function connectionTimeout() {
+            self.useGaze = true
+            self.gazeController = new GazeController(self.scene, self.dummyCam)
+        }
+
+        this.controllers = this.buildControllers(this.dolly)
+        this.controllers.forEach((controller ) => {
+            controller.addEventListener('selectstart', onSelectStart)
+            controller.addEventListener('selectend', onSelectEnd)
+
+            controller.addEventListener('connected', onConnected)
+        })
+
+
+
+
         document.body.appendChild(VRButton.createButton(this.renderer))
-
         this.createUI();
-
         this.renderer.setAnimationLoop(this.render.bind(this))
     }
 
@@ -391,6 +414,9 @@ class App {
     }
 
     render( timestamp, frame) {
+
+
+
         if (this.renderer.xr.isPresenting && this.boardData) {
             const scene = this.scene;
             const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
@@ -476,19 +502,27 @@ class App {
 
         const dt = this.clock.getDelta();
 
-        if (this.renderer.xr.isPresenting && this.selectPressed){
-            this.moveDolly(dt);
+
+        let moveGaze = false
+
+        if (this.useGaze && this.gazeController !== undefined) {
+            this.gazeController.update()
+            moveGaze = (this.gazeController.mode === GazeController.Modes.MOVE)
         }
 
+        if (this.renderer.xr.isPresenting && (this.selectPressed || moveGaze)){
+            this.moveDolly(dt)
+        }
+
+
         if(this.renderer.xr.isPresenting && this.skull) {
-
-
 
             const table = this.scene.getObjectByName("Atrium_Table_1")
             const tablePos = table.getWorldPosition(this.vecObject)
             const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
 
-
+            // Object.entries(this.skullData).forEach(([name, properties]) => {
+            //     const height = properties.height
 
                 if (dollyPos.distanceTo(tablePos) < 3) {
                     this.skullInfo = 'skull.glb'
@@ -504,7 +538,10 @@ class App {
                 this.skull.lookAt(camPos)
             }
 
+         //})
         }
+
+
 
         this.stats.update()
         this.renderer.render(this.scene, this.camera);
