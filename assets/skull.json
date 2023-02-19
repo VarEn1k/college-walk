@@ -1,5 +1,12 @@
 {
   "Atrium_Table_1": {
-    "height": 2
+    "height": 2,
+    "scale": 1,
+    "model": "skull.glb"
+  },
+  "RowOfChairs__2_": {
+    "height": 2,
+    "scale": 1,
+    "model": "snowman.glb"
   }
 }

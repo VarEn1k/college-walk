@@ -14,14 +14,17 @@ import skullInfo from "../assets/skull.json"
 
 import venice_sunset_environment from "../assets/hdr/venice_sunset_1k.hdr"
 import college from "../assets/college.glb"
-import skull from "../assets/skull.glb"
+import skull from "../assets/models/skull.glb"
 
 import snowman from "../assets/snowman_-_low_poly.glb"
 import {CanvasUI} from "./utils/CanvasUI";
 import {GazeController} from "./utils/GazeController";
+import {property} from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
+import getFontProperties from "three/examples/jsm/libs/lottie_canvas.module";
 const snowmanPosition = {x: 0, y: 0.5, z: -1, scale: 1.0}
 
 class App {
+
 
     constructor() {
         const container = document.createElement('div');
@@ -80,8 +83,6 @@ class App {
 
         // this.loadingBar = new LoadingBar()
 
-        this.loadCollege();
-        this.initScene();
 
         this.vecDolly = new THREE.Vector3()
         this.vecObject = new THREE.Vector3()
@@ -90,6 +91,9 @@ class App {
         this.boardShown = ''
         this.boardData = collegeInfo
         this.skullData = skullInfo
+
+        this.loadCollege();
+        this.initScene();
     }
 
     setEnvironment(){
@@ -189,22 +193,36 @@ class App {
 
         const self = this
 
+        Object.entries(this.skullData).forEach(([name, properties]) => {
+            const height = properties.height
+            const scale = properties.scale
+            const model = properties.model
+
+            this.loadAsset(model,0 ,0,-1, scene => {
+
+                scene.scale.set(scale, scale, scale)
+                scene.name = `${name}-${model}`
+                scene.visible = false
+            })
+        })
+
         // this.loadAsset(snowman, snowmanPosition.x, snowmanPosition.y, snowmanPosition.z, scene => {
         //     const scale = snowmanPosition.scale
         //     scene.scale.set(scale, scale, scale)
         //     self.snowman = scene
         // })
-        this.loadAsset(skull, 0, 2, -2,scene => {
-            const scale = 1
-            scene.scale.set(scale, scale, scale)
-            self.skull = scene
-        })
+        // this.loadAsset(skull, 0, 2, -2,scene => {
+        //     const scale = 1
+        //     scene.scale.set(scale, scale, scale)
+        //     self.skull = scene
+        // })
 
     }
 
     loadAsset(gltfFilename, x, y, z, sceneHandler) {
         const self = this
         const loader = new GLTFLoader()
+        loader.setPath("assets/")
         // Provide a DRACOLoader instance to decode compressed mesh data
         const draco = new DRACOLoader()
         draco.setDecoderPath('draco/')
@@ -515,34 +533,63 @@ class App {
         }
 
 
-        if(this.renderer.xr.isPresenting && this.skull) {
+        if(this.renderer.xr.isPresenting && this.skullData) {
+                const scene = this.scene;
+                const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
+                let modelFound = false;
+                Object.entries(this.skullData).forEach(([name,properties]) => {
+                    const height = properties.height
+                    // const scale = properties.scale
 
-            const table = this.scene.getObjectByName("Atrium_Table_1")
-            const tablePos = table.getWorldPosition(this.vecObject)
-            const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
+                    const model = properties.model
+                    const modelName = `${name}-${model}`
 
-            // Object.entries(this.skullData).forEach(([name, properties]) => {
-            //     const height = properties.height
+                    const connectedObject = scene.getObjectByName(name)
+                    const modelObject = scene.getObjectByName(modelName)
 
-                if (dollyPos.distanceTo(tablePos) < 3) {
-                    this.skullInfo = 'skull.glb'
-                    this.skull.position.set(tablePos.x, tablePos.y + 2, tablePos.z)
+                    if (modelObject !== undefined) {
+                        const pos = connectedObject.getWorldPosition(this.vecObject)
+                        if (dollyPos.distanceTo(pos) < 3) {
+                            if (!modelObject.visible) {
+                                modelObject.position.set(pos.x, pos.y + height, pos.z)
+                                modelObject.visible = true
+                            }
+                        } else {
+                            modelObject.visible = false
+                        }
+                    }
+                        // if (this.modelObject) {
+                        //     const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
+                        //     this.modelObject.lookAt(camPos)
+                        // }
+                })
 
-                    // this.skull.translateY(1.2)
-                    this.skull.visible = true
-            } else {
-                    this.skull.visible = false
-                }
-            if (this.skull) {
-                const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
-                this.skull.lookAt(camPos)
-            }
 
-         //})
+
+
+         //    const table = this.scene.getObjectByName(name)
+         //    const tablePos = table.getWorldPosition(this.vecObject)
+         //    const dollyPos = this.dolly.getWorldPosition(this.vecDolly);
+         //
+         //
+         //    // Object.entries(this.skullData).forEach(([name, properties]) => {
+         //    //     const height = properties.height
+         //
+         //        if (dollyPos.distanceTo(tablePos) < 3) {
+         //            this.skullInfo = ''
+         //            this.skull.position.set(tablePos.x, tablePos.y + 1.5, tablePos.z)
+         //
+         //            // this.skull.translateY(1.2)
+         //            this.skull.visible = true
+         //    } else {
+         //            this.skull.visible = false
+         //        }
+         //    if (this.skull) {
+         //        const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
+         //        this.skull.lookAt(camPos)
+         //    }
+         // //})
         }
-
-
-
         this.stats.update()
         this.renderer.render(this.scene, this.camera);
     }

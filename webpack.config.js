@@ -16,6 +16,11 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
+        {from: 'assets/models', to: 'assets'}
+      ]
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
         {from: 'node_modules/@webxr-input-profiles/assets/dist/profiles', to: 'profiles'}
       ]
     })
