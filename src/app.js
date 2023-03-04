@@ -547,21 +547,23 @@ class App {
                     const connectedObject = scene.getObjectByName(name)
                     const modelObject = scene.getObjectByName(modelName)
 
+                    if (modelObject) {
+                        const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
+                        modelObject.lookAt(camPos)
+                    }
+
                     if (modelObject !== undefined) {
                         const pos = connectedObject.getWorldPosition(this.vecObject)
                         if (dollyPos.distanceTo(pos) < 3) {
                             if (!modelObject.visible) {
                                 modelObject.position.set(pos.x, pos.y + height, pos.z)
                                 modelObject.visible = true
+
                             }
                         } else {
                             modelObject.visible = false
                         }
                     }
-                        // if (this.modelObject) {
-                        //     const camPos = this.dummyCam.getWorldPosition(this.workingVec3)
-                        //     this.modelObject.lookAt(camPos)
-                        // }
                 })
 
 
